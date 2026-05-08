@@ -58,6 +58,15 @@ else:
 if interface.has_summary_json() and not ALWAYS_REBUILD_SUMMARY:
     print('Re-using existing summary JSON')
     interface.read_summary_json()
+
+    indexed_tiles = len(getattr(interface, 'all_coords', []))
+    if health_report['file_count'] > 0 and indexed_tiles == 0:
+        logger.warning(
+            'Summary JSON appears stale or empty (indexed_tiles=%s while tif_files=%s). Rebuilding summary.',
+            indexed_tiles,
+            health_report['file_count']
+        )
+        interface.create_summary_json()
 else:
     print('Creating summary JSON ...')
     interface.create_summary_json()
