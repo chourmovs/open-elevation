@@ -37,9 +37,36 @@ Initialize a global interface. This can grow quite large, because it has a cache
 """
 interface = GDALTileInterface(DATA_FOLDER, '%s/summary.json' % DATA_FOLDER, OPEN_INTERFACES_SIZE)
 
+health_report = interface.dataset_health_report()
+logger.info(
+    'GeoTIFF dataset health check: folder=%s files=%s total_size_mb=%s',
+    health_report['tiles_folder'],
+    health_report['file_count'],
+    health_report['total_size_mb']
+)
+if health_report['file_count'] == 0:
+    logger.warning('No .tif files found in dataset folder=%s', health_report['tiles_folder'])
+else:
+    logger.info(
+        'GeoTIFF file list sample (%s/%s): %s%s',
+        len(health_report['file_list']),
+        health_report['file_count'],
+        ', '.join(health_report['file_list']),
+        ' ...' if health_report['file_list_truncated'] else ''
+    )
+
 if interface.has_summary_json() and not ALWAYS_REBUILD_SUMMARY:
     print('Re-using existing summary JSON')
     interface.read_summary_json()
+
+    indexed_tiles = len(getattr(interface, 'all_coords', []))
+    if health_report['file_count'] > 0 and indexed_tiles == 0:
+        logger.warning(
+            'Summary JSON appears stale or empty (indexed_tiles=%s while tif_files=%s). Rebuilding summary.',
+            indexed_tiles,
+            health_report['file_count']
+        )
+        interface.create_summary_json()
 else:
     print('Creating summary JSON ...')
     interface.create_summary_json()

@@ -124,6 +124,23 @@ class GDALTileInterface(object):
     def _all_files(self):
         return [f for f in listdir(self.tiles_folder) if isfile(join(self.tiles_folder, f)) and f.endswith(u'.tif')]
 
+
+    def dataset_health_report(self, filelist_limit=20):
+        files = sorted(self._all_files())
+        file_count = len(files)
+        total_size_bytes = sum(getsize(join(self.tiles_folder, f)) for f in files)
+
+        report = {
+            'tiles_folder': self.tiles_folder,
+            'file_count': file_count,
+            'total_size_bytes': total_size_bytes,
+            'total_size_mb': round(total_size_bytes / (2**20), 2),
+            'file_list': files[:filelist_limit],
+            'file_list_truncated': file_count > filelist_limit
+        }
+
+        return report
+
     def has_summary_json(self):
         return os.path.exists(self.summary_file)
 
