@@ -1,10 +1,14 @@
 import configparser
 import json
 import os
+import logging
 
 from bottle import route, run, request, response, hook
 from gdal_interfaces import GDALTileInterface
 
+
+logging.basicConfig(level=os.getenv('LOG_LEVEL', 'INFO').upper(), format='%(asctime)s %(levelname)s %(name)s: %(message)s')
+logger = logging.getLogger(__name__)
 
 class InternalException(ValueError):
     """
@@ -39,6 +43,7 @@ if interface.has_summary_json() and not ALWAYS_REBUILD_SUMMARY:
 else:
     print('Creating summary JSON ...')
     interface.create_summary_json()
+logger.info('Dataset initialized from folder=%s with %s indexed tile(s)', DATA_FOLDER, len(getattr(interface, 'all_coords', [])))
 
 def get_elevation(lat, lng):
     """
@@ -49,7 +54,8 @@ def get_elevation(lat, lng):
     """
     try:
         elevation = interface.lookup(lat, lng)
-    except:
+    except Exception as e:
+        logger.exception('Elevation lookup failed for lat=%s lng=%s: %s', lat, lng, e)
         return {
             'latitude': lat,
             'longitude': lng,
@@ -130,6 +136,7 @@ def do_lookup(get_locations_func):
     """
     try:
         locations = get_locations_func()
+        logger.info('Incoming lookup request with %s location(s)', len(locations))
         return {'results': [get_elevation(lat, lng) for (lat, lng) in locations]}
     except InternalException as e:
         response.status = 400

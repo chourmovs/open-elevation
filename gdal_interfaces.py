@@ -5,6 +5,9 @@ from os import listdir
 from os.path import isfile, join, getsize
 import json
 from rtree import index
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Originally based on https://stackoverflow.com/questions/13439357/extract-point-from-raster-in-gdal
 class GDALInterface(object):
@@ -161,15 +164,17 @@ class GDALTileInterface(object):
         self._build_index()
 
     def lookup(self, lat, lng):
-        nearest = list(self.index.nearest((lat, lng), 1, objects=True))
+        matches = list(self.index.intersection((lat, lng, lat, lng), objects=True))
 
-        if not nearest:
+        if not matches:
+            logger.warning('No tile matched coordinate lat=%s lng=%s. Indexed tiles=%s', lat, lng, len(getattr(self, 'all_coords', [])))
             raise Exception('Invalid latitude/longitude')
-        else:
-            coords = nearest[0].object
 
-            gdal_interface = self._open_gdal_interface(coords['file'])
-            return int(gdal_interface.lookup(lat, lng))
+        coords = matches[0].object
+        logger.info('Coordinate lat=%s lng=%s matched tile=%s bounds=%s', lat, lng, coords['file'], coords['coords'])
+
+        gdal_interface = self._open_gdal_interface(coords['file'])
+        return int(gdal_interface.lookup(lat, lng))
 
     def _build_index(self):
         print('Building spatial index ...')
@@ -177,4 +182,7 @@ class GDALTileInterface(object):
         for e in self.all_coords:
             e['index_id'] = index_id
             left, bottom, right, top = (e['coords'][0], e['coords'][2], e['coords'][1], e['coords'][3])
-            self.index.insert( index_id, (left, bottom, right, top), obj=e)
+            self.index.insert(index_id, (left, bottom, right, top), obj=e)
+            index_id += 1
+
+        logger.info('Spatial index ready with %s tiles from folder=%s', len(self.all_coords), self.tiles_folder)
