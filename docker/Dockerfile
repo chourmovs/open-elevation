@@ -1,4 +1,4 @@
-FROM osgeo/gdal:ubuntu-small-latest-amd64
+FROM osgeo/gdal:ubuntu-small-latest
 
 ENV TZ=Europe/Madrid
 ENV CPLUS_INCLUDE_PATH=/usr/include/gdal
