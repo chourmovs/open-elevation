@@ -14,7 +14,8 @@ RUN mkdir /code
 ADD . /code/
 
 WORKDIR /code
-CMD python3 server.py
+ENTRYPOINT ["/code/docker/entrypoint.sh"]
+CMD ["python3", "server.py"]
 
 EXPOSE 8080
 

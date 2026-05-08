@@ -25,19 +25,26 @@ Open-Elevation doesn't come with any data of its own, but it offers a set of scr
 
 #### Whole World
 
-If you wish to host the whole world, just run
+The container entrypoint now initializes the dataset automatically when `/code/data` is empty.
+So in most cases, creating the folder and starting the server is enough:
 
 ```
 mkdir data # Create the target folder for the dataset
-docker run -t -i -v $(pwd)/data:/code/data openelevation/open-elevation /code/create-dataset.sh
+docker run -t -i -v $(pwd)/data:/code/data -p 80:8080 openelevation/open-elevation
 ```
 Or if you're on Windows Powershell:
 ```
 mkdir data # Create the target folder for the dataset
-docker run -t -i -v ${pwd}/data:/code/data openelevation/open-elevation /code/create-dataset.sh
+docker run -t -i -v ${pwd}/data:/code/data -p 80:8080 openelevation/open-elevation
 ```
 
-The above command should have downloaded the entire SRTM dataset and split it into multiple smaller files in the `data` directory. **Be aware that this directory may be over 20 GB in size after the process is completed!**
+If you prefer, you can still run the dataset script explicitly:
+
+```
+docker run -t -i -v $(pwd)/data:/code/data openelevation/open-elevation /code/create-dataset.sh
+```
+
+The dataset creation process can take a while and the `data` directory may be over 20 GB in size after completion.
 
 #### Custom Data
 
