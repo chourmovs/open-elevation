@@ -1,17 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-DATA_DIR="/code/data"
+INITIALIZE_DATASET="${INITIALIZE_DATASET:-no}"
 
-if [ ! -d "$DATA_DIR" ]; then
-  mkdir -p "$DATA_DIR"
-fi
-
-if [ -z "$(ls -A "$DATA_DIR")" ]; then
-  echo "[entrypoint] $DATA_DIR is empty, creating dataset..."
+if [ "$INITIALIZE_DATASET" = "yes" ]; then
+  echo "[entrypoint] INITIALIZE_DATASET=yes, running dataset creation..."
+  mkdir -p /code/data
   /code/create-dataset.sh
 else
-  echo "[entrypoint] $DATA_DIR already contains data, skipping dataset creation."
+  echo "[entrypoint] INITIALIZE_DATASET=$INITIALIZE_DATASET, skipping dataset creation."
 fi
 
 exec "$@"

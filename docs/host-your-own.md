@@ -25,23 +25,23 @@ Open-Elevation doesn't come with any data of its own, but it offers a set of scr
 
 #### Whole World
 
-The container entrypoint now initializes the dataset automatically when `/code/data` is empty.
-So in most cases, creating the folder and starting the server is enough:
+Dataset initialization can be controlled with the `INITIALIZE_DATASET` environment variable (`yes` or `no`).
+
+- `INITIALIZE_DATASET=no` (default): start the server without running `/code/create-dataset.sh`
+- `INITIALIZE_DATASET=yes`: run `/code/create-dataset.sh` before starting the server
+
+Example (Linux/macOS):
 
 ```
 mkdir data # Create the target folder for the dataset
-docker run -t -i -v $(pwd)/data:/code/data -p 80:8080 openelevation/open-elevation
+docker run -t -i -e INITIALIZE_DATASET=yes -v $(pwd)/data:/code/data -p 80:8080 openelevation/open-elevation
 ```
-Or if you're on Windows Powershell:
+
+Or on Windows Powershell:
+
 ```
 mkdir data # Create the target folder for the dataset
-docker run -t -i -v ${pwd}/data:/code/data -p 80:8080 openelevation/open-elevation
-```
-
-If you prefer, you can still run the dataset script explicitly:
-
-```
-docker run -t -i -v $(pwd)/data:/code/data openelevation/open-elevation /code/create-dataset.sh
+docker run -t -i -e INITIALIZE_DATASET=yes -v ${pwd}/data:/code/data -p 80:8080 openelevation/open-elevation
 ```
 
 The dataset creation process can take a while and the `data` directory may be over 20 GB in size after completion.
