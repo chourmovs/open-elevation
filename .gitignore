@@ -1,5 +1,2 @@
-__pycache__/
-*.pyc
-data/
-.idea/
-certs/
+node_modules/
+dist/
